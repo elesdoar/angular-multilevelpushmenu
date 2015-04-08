@@ -1,0 +1,19 @@
+﻿<div ng-show="visible" ng-class="{visible: visible, multilevelpushmenu_inactive: inactive && !collapsed}" class="levelHolderClass">
+    <h2><i class="floatRight cursorPointer" ng-class="menu.icon" ng-click="openMenu($event, menu)"></i>{{menu.title}}</h2>
+    <div ng-show="level != 0 && !inactive" ng-class="options.backItemClass">
+        <a href="#" ng-click="goBack($event, menu)">
+            <i class="floatRight" ng-class="options.backItemIcon"></i><span ng-bind="options.backText"></span>
+        </a>
+    </div>
+    <ul ng-class="{invisible: inactive}">
+        <li ng-repeat="item in menu.items">
+            <a ng-href="{{item.link}}" ng-click="onSubmenuClicked(item, $event)">
+                <i ng-if="item.menu" class="floatLeft iconSpacing" ng-class="options.groupIcon"></i>
+                <i class="floatRight" ng-class="item.icon"></i>{{item.name}}
+            </a>
+            <div ng-if="item.menu">
+                <recursive><wxy-submenu menu="item.menu" level="childrenLevel" visible="item.visible"></wxy-submenu></recursive>
+            </div>
+        </li>
+    </ul>
+</div>

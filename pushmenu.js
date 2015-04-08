@@ -69,7 +69,8 @@
           visible: '='
         },
         link: function(scope, element, attr, ctrl) {
-          var collapse, marginCollapsed, onOpen, options;
+          var collapse, marginCollapsed, onOpen, options,
+            _this = this;
           scope.options = options = ctrl.GetOptions();
           scope.childrenLevel = scope.level + 1;
           onOpen = function() {
@@ -140,52 +141,44 @@
             scope.visible = false;
             return scope.$emit('submenuClosed', scope.level);
           };
-          scope.$watch('visible', (function(_this) {
-            return function(visible) {
-              var animatePromise;
-              if (visible) {
-                if (scope.level > 0) {
-                  options.onExpandMenuStart();
-                  animatePromise = $animate.addClass(element, 'slide', {
-                    fromMargin: -ctrl.GetBaseWidth(),
-                    toMargin: 0
+          scope.$watch('visible', function(visible) {
+            var animatePromise;
+            if (visible) {
+              if (scope.level > 0) {
+                options.onExpandMenuStart();
+                animatePromise = $animate.addClass(element, 'slide', {
+                  fromMargin: -ctrl.GetBaseWidth(),
+                  toMargin: 0
+                });
+                animatePromise.then(function() {
+                  scope.$apply(function() {
+                    options.onExpandMenuEnd();
                   });
-                  animatePromise.then(function() {
-                    scope.$apply(function() {
-                      options.onExpandMenuEnd();
-                    });
-                  });
-                }
-                onOpen();
+                });
               }
-            };
-          })(this));
-          scope.$on('submenuOpened', (function(_this) {
-            return function(event, level) {
-              var correction, correctionWidth;
-              correction = level - scope.level;
-              correctionWidth = options.overlapWidth * correction;
-              element.width(ctrl.GetBaseWidth() + correctionWidth);
-              if (scope.level === 0) {
-                wxyUtils.PushContainers(options.containersToPush, correctionWidth);
-              }
-            };
-          })(this));
-          scope.$on('submenuClosed', (function(_this) {
-            return function(event, level) {
-              if (level - scope.level === 1) {
-                onOpen();
-                wxyUtils.StopEventPropagation(event);
-              }
-            };
-          })(this));
-          scope.$on('menuOpened', (function(_this) {
-            return function(event, level) {
-              if (scope.level - level > 0) {
-                scope.visible = false;
-              }
-            };
-          })(this));
+              onOpen();
+            }
+          });
+          scope.$on('submenuOpened', function(event, level) {
+            var correction, correctionWidth;
+            correction = level - scope.level;
+            correctionWidth = options.overlapWidth * correction;
+            element.width(ctrl.GetBaseWidth() + correctionWidth);
+            if (scope.level === 0) {
+              wxyUtils.PushContainers(options.containersToPush, correctionWidth);
+            }
+          });
+          scope.$on('submenuClosed', function(event, level) {
+            if (level - scope.level === 1) {
+              onOpen();
+              wxyUtils.StopEventPropagation(event);
+            }
+          });
+          scope.$on('menuOpened', function(event, level) {
+            if (scope.level - level > 0) {
+              scope.visible = false;
+            }
+          });
         },
         templateUrl: 'partials/SubMenu.html',
         require: '^wxyPushMenu',
@@ -227,8 +220,8 @@
       if (!containersToPush) {
         return;
       }
-      return $.each(containersToPush, function() {
-        return $(this).stop().animate({
+      return $.each(containersToPush, function(i, el) {
+        return $(el).stop().animate({
           marginLeft: absoluteDistance
         });
       });
