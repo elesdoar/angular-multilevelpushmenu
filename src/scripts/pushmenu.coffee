@@ -4,10 +4,11 @@ module.directive 'wxyPushMenu', ['wxyOptions', 'wxyUtils', (wxyOptions, wxyUtils
     scope:
         menu: '='
         options: '='
-    controller: ($scope, $element, $attrs) ->
+    controller: ($scope, $element, $attrs, $log) ->
         $scope.options = options = angular.extend wxyOptions, $scope.options
         $scope.level = 0
         $scope.visible = true
+        $scope.collapsed = false
 
         # Calculate width. I don't think this is actually used anywhere right now.
         width = options.menuWidth || 265
@@ -15,6 +16,21 @@ module.directive 'wxyPushMenu', ['wxyOptions', 'wxyUtils', (wxyOptions, wxyUtils
 
         this.GetBaseWidth = -> width
         this.GetOptions = -> options
+        this.toggle = ->
+            $scope.collapsed = !$scope.collapsed
+            return
+        this.show = ->
+            $scope.collapsed = false
+            return
+        this.hide = ->
+            $scope.collapsed = true
+            return
+        this.getCurrentWidth = () ->
+            if $scope.collapsed then options.overlapWidth else width
+
+        $scope.$watch 'collapsed', ((collapsed) =>
+            $log.debug 'Collapsed', collapsed
+            return), true
         return
     templateUrl: 'partials/MainMenu.html'
     restrict: 'E'
@@ -29,6 +45,10 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
     link: (scope, element, attr, ctrl) ->
         scope.options = options = ctrl.GetOptions()
         scope.childrenLevel = scope.level + 1
+
+        # Get current width
+        scope.getCurrentWidth = () ->
+            if scope.collapsed then options.overlapWidth else ctrl.GetBaseWidth()
 
         # Handler for when a menu is opened.
         onOpen = ->
@@ -47,6 +67,8 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
                 scope.inactive = true
                 element.css marginLeft: marginCollapsed
 
+            wxyUtils.PushContainers options.containersToPush, scope.getCurrentWidth()
+
             collapse = ->
                 scope.collapsed = !scope.collapsed
                 scope.inactive = scope.collapsed
@@ -62,7 +84,7 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
                         return
                     return
 
-                wxyUtils.PushContainers options.containersToPush, if scope.collapsed then marginCollapsed else 0
+                wxyUtils.PushContainers options.containersToPush, scope.getCurrentWidth()
                 return
 
         # Event handler for when the menu icon is clicked.
@@ -118,11 +140,13 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
             correction = level - scope.level
             correctionWidth = options.overlapWidth * correction
             element.width ctrl.GetBaseWidth() + correctionWidth
-            wxyUtils.PushContainers options.containersToPush, correctionWidth if scope.level == 0
+            # wxyUtils.PushContainers options.containersToPush, correctionWidth if scope.level == 0
+            # ctrl.show() if scope.level == 0
             return
 
         # Event listener for when a submenu is closed. Opens the parent of the submenu.
         scope.$on 'submenuClosed', (event, level) =>
+            # ctrl.hide() if scope.level == 0
             if level - scope.level == 1
                 onOpen()
                 wxyUtils.StopEventPropagation event
@@ -130,6 +154,7 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
 
         # Event listener for when a parent menu is opened. Closes all of the submenus.
         scope.$on 'menuOpened', (event, level) =>
+            ctrl.toggle() if scope.level == 0
             scope.visible = false if scope.level - level > 0
             return
 
@@ -164,7 +189,8 @@ module.factory 'wxyUtils', ->
     PushContainers = (containersToPush, absoluteDistance) ->
         return if not containersToPush
         $.each containersToPush, (i, el) ->
-            $(el).stop().animate marginLeft: absoluteDistance
+            elem = $ el
+            elem.stop().animate marginLeft: absoluteDistance
 
     StopEventPropagation: StopEventPropagation
     DepthOf: DepthOf
