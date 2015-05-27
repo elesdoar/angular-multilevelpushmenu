@@ -37,7 +37,7 @@ module.directive 'wxyPushMenu', ['wxyOptions', 'wxyUtils', (wxyOptions, wxyUtils
     replace: true
 ]
 
-module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
+module.directive 'wxySubmenu', ['$animate', '$timeout', 'wxyUtils', ($animate, $timeout, wxyUtils) ->
     scope:
         menu: '='
         level: '='
@@ -79,9 +79,10 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
                     toMargin: if scope.collapsed then marginCollapsed else 0
 
                 animatePromise.then ->
-                    scope.$apply ->
-                            if scope.collapsed then options.onCollapseMenuEnd() else options.onExpandMenuEnd()
+                    $timeout (->
+                        if scope.collapsed then options.onCollapseMenuEnd() else options.onExpandMenuEnd()
                         return
+                    ), 0
                     return
 
                 wxyUtils.PushContainers options.containersToPush, scope.getCurrentWidth()
@@ -127,9 +128,10 @@ module.directive 'wxySubmenu', ['$animate', 'wxyUtils', ($animate, wxyUtils) ->
                         toMargin: 0
 
                     animatePromise.then ->
-                        scope.$apply ->
+                        $timeout (->
                             options.onExpandMenuEnd()
                             return
+                        ), 0
                         return
 
                 onOpen()

@@ -82,7 +82,7 @@
   ]);
 
   module.directive('wxySubmenu', [
-    '$animate', 'wxyUtils', function($animate, wxyUtils) {
+    '$animate', '$timeout', 'wxyUtils', function($animate, $timeout, wxyUtils) {
       return {
         scope: {
           menu: '=',
@@ -134,14 +134,13 @@
                 toMargin: scope.collapsed ? marginCollapsed : 0
               });
               animatePromise.then(function() {
-                scope.$apply(function() {
+                $timeout((function() {
                   if (scope.collapsed) {
-                    return options.onCollapseMenuEnd();
+                    options.onCollapseMenuEnd();
                   } else {
-                    return options.onExpandMenuEnd();
+                    options.onExpandMenuEnd();
                   }
-                });
-                return;
+                }), 0);
               });
               wxyUtils.PushContainers(options.containersToPush, scope.getCurrentWidth());
             };
@@ -180,9 +179,9 @@
                   toMargin: 0
                 });
                 animatePromise.then(function() {
-                  scope.$apply(function() {
+                  $timeout((function() {
                     options.onExpandMenuEnd();
-                  });
+                  }), 0);
                 });
               }
               onOpen();
