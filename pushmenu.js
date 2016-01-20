@@ -40,8 +40,7 @@
           options: '='
         },
         controller: function($scope, $element, $attrs, $log) {
-          var options, width,
-            _this = this;
+          var options, width;
           $scope.options = options = angular.extend(wxyOptions, $scope.options);
           $scope.level = 0;
           $scope.visible = true;
@@ -63,7 +62,7 @@
           this.hide = function() {
             $scope.collapsed = true;
           };
-          this.getCurrentWidth = function() {
+          $scope.getCurrentWidth = function() {
             if ($scope.collapsed) {
               return options.overlapWidth;
             } else {
@@ -90,8 +89,7 @@
           visible: '='
         },
         link: function(scope, element, attr, ctrl) {
-          var collapse, marginCollapsed, onOpen, options,
-            _this = this;
+          var collapse, marginCollapsed, onOpen, options;
           scope.options = options = ctrl.GetOptions();
           scope.childrenLevel = scope.level + 1;
           scope.getCurrentWidth = function() {

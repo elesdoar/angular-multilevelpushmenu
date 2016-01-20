@@ -25,10 +25,10 @@ module.directive 'wxyPushMenu', ['wxyOptions', 'wxyUtils', (wxyOptions, wxyUtils
         this.hide = ->
             $scope.collapsed = true
             return
-        this.getCurrentWidth = () ->
+        $scope.getCurrentWidth = () ->
             if $scope.collapsed then options.overlapWidth else width
 
-        $scope.$watch 'collapsed', ((collapsed) =>
+        $scope.$watch 'collapsed', ((collapsed) ->
             $log.debug 'Collapsed', collapsed
             return), true
         return
@@ -119,7 +119,7 @@ module.directive 'wxySubmenu', ['$animate', '$timeout', 'wxyUtils', ($animate, $
             scope.$emit 'submenuClosed', scope.level
 
         # Activate open handler when the menu becomes visible.
-        scope.$watch 'visible', (visible) =>
+        scope.$watch 'visible', (visible) ->
             if visible
                 if scope.level > 0
                     options.onExpandMenuStart()
@@ -138,7 +138,7 @@ module.directive 'wxySubmenu', ['$animate', '$timeout', 'wxyUtils', ($animate, $
             return
 
         # Event listener for when a submenu is opened. Corrects the width for the menu.
-        scope.$on 'submenuOpened', (event, level) =>
+        scope.$on 'submenuOpened', (event, level) ->
             correction = level - scope.level
             correctionWidth = options.overlapWidth * correction
             element.width ctrl.GetBaseWidth() + correctionWidth
@@ -147,7 +147,7 @@ module.directive 'wxySubmenu', ['$animate', '$timeout', 'wxyUtils', ($animate, $
             return
 
         # Event listener for when a submenu is closed. Opens the parent of the submenu.
-        scope.$on 'submenuClosed', (event, level) =>
+        scope.$on 'submenuClosed', (event, level) ->
             # ctrl.hide() if scope.level == 0
             if level - scope.level == 1
                 onOpen()
@@ -155,7 +155,7 @@ module.directive 'wxySubmenu', ['$animate', '$timeout', 'wxyUtils', ($animate, $
             return
 
         # Event listener for when a parent menu is opened. Closes all of the submenus.
-        scope.$on 'menuOpened', (event, level) =>
+        scope.$on 'menuOpened', (event, level) ->
             ctrl.toggle() if scope.level == 0
             scope.visible = false if scope.level - level > 0
             return
